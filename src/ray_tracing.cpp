@@ -7,6 +7,7 @@
 //============================================================================
 
 #include <iostream>
+#include <fstream>
 
 #include "geometry/geometry.h"
 #include "utils/utils.h"
@@ -95,11 +96,15 @@ int main() {
 	// Camera
     camera cam(20.0, point3(13,2,3), point3(0,0,0), vec3(0,1,0), 0.1, 10.0, 0, 1);
 
+    std::ofstream output;
+    output.open("image2.ppm");
+
 	// Render
-	std::cout << "P3\n" << image_width << ' ' << image_height << "\n255\n";
+	output << "P3\n" << image_width << ' ' << image_height << "\n255\n";
 
 	for (int i = image_height - 1; i >= 0; i--) {
 		for (int j = 0; j < image_width; j++) {
+            std::cout << "writing pixel (" << i << "," << j << ")" << std::endl;
             color pixel_color(0, 0, 0);
             for (int s = 0; s < samples_per_pixel; ++s) {
                 double h_offset = (j + random_double()) / (image_width-1);
@@ -107,7 +112,7 @@ int main() {
                 ray r = cam.get_ray(h_offset, v_offset);
                 pixel_color += ray_color(r, bvh_world, max_depth);
             }
-            write_color(std::cout, pixel_color, samples_per_pixel);
+            write_color(output, pixel_color, samples_per_pixel);
 		}
 	}
 
