@@ -8,7 +8,7 @@
 
 #define STB_IMAGE_IMPLEMENTATION
 #define STBI_FAILURE_USERMSG
-#include "external/stb_image.h"
+#include "../external/stb_image.h"
 
 #include <cstdlib>
 #include <iostream>
@@ -21,7 +21,7 @@ class rtw_image {
         auto filename = std::string(image_filename);
 
         // Hunt for the image file in some likely locations.
-        if (load("../../images/" + filename)) return;
+        if (load("../images/" + filename)) return;
 
         std::cerr << "ERROR: Could not load image file '" << image_filename << "'.\n";
     }
