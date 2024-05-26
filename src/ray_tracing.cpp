@@ -36,10 +36,9 @@ color ray_color(const ray& r, const hittable& world, int depth) {
 hittable_list random_scene() {
     hittable_list world;
 
-    auto checker = make_shared<checker_texture>(color(0.2, 0.3, 0.1), color(0.9, 0.9, 0.9));
-    checker->set_size(10);
-    auto checkered_text = make_shared<lambertian>(checker);
-    world.add(make_shared<sphere>(point3(0,-1000,0), point3(0,-1000,0), 0, 1, 1000, checkered_text));
+    auto earth = make_shared<image_texture>("earthmap.jpg");
+    auto earth_text = make_shared<lambertian>(earth);
+    world.add(make_shared<sphere>(point3(0,-1000,0), point3(0,-1000,0), 0, 1, 1000, earth_text));
 
     for (int a = -15; a < 15; a++) {
         for (int b = -15; b < 15; b++) {
@@ -81,6 +80,26 @@ hittable_list random_scene() {
     return world;
 }
 
+hittable_list earth_scene() {
+    hittable_list world;
+
+    auto earth = make_shared<image_texture>("earthmap.jpg");
+    auto earth_text = make_shared<lambertian>(earth);
+    world.add(make_shared<sphere>(point3(0,0,0), point3(0,0,0), 0, 1, 3.0, earth_text));
+
+    return world;
+}
+
+hittable_list perlin_scene() {
+    hittable_list world;
+
+    auto perlin = make_shared<perlin_texture>(64);
+    auto perlin_text = make_shared<lambertian>(perlin);
+    world.add(make_shared<sphere>(point3(0,0,0), point3(0,0,0), 0, 1, 3.0, perlin_text));
+
+    return world;
+}
+
 int main() {
 	// Image
 	const int image_width = 400;
@@ -90,7 +109,7 @@ int main() {
 	const int max_depth = 15;
 
 	// World
-	hittable_list world = random_scene();
+	hittable_list world = perlin_scene();
 	auto bvh_world = bvh_node(world, 0, 1);
 
 	// Camera
@@ -103,8 +122,8 @@ int main() {
 	output << "P3\n" << image_width << ' ' << image_height << "\n255\n";
 
 	for (int i = image_height - 1; i >= 0; i--) {
+        std::cout << "writing row " << i << std::endl;
 		for (int j = 0; j < image_width; j++) {
-            std::cout << "writing pixel (" << i << "," << j << ")" << std::endl;
             color pixel_color(0, 0, 0);
             for (int s = 0; s < samples_per_pixel; ++s) {
                 double h_offset = (j + random_double()) / (image_width-1);

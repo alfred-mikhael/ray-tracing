@@ -9,6 +9,9 @@
 #define UTILS_TEXTURE_H_
 
 #include "color.h"
+#include "utility.h"
+#include "perlin.h"
+#include "rtw_image.h"
 #include "../geometry/vec3.h"
 #include <cmath>
 
@@ -63,6 +66,50 @@ class checker_texture : public texture {
         shared_ptr<texture> even;
         shared_ptr<texture> odd;
         double size;
+};
+
+class image_texture : public texture {
+  public:
+    image_texture(const char* filename) : image(filename) {}
+
+    color value(double u, double v, const point3& p) const override {
+        // If we have no texture data, then return solid cyan as a debugging aid.
+        if (image.height() <= 0) return color(0,1,1);
+
+        // Clamp input texture coordinates to [0,1] x [1,0]
+        u = clamp(u, 0, 1);
+        v = 1.0 - clamp(v, 0, 1);  // Flip V to image coordinates
+
+        auto i = int(u * image.width());
+        auto j = int(v * image.height());
+        auto pixel = image.pixel_data(i,j);
+
+        auto color_scale = 1.0 / 255.0;
+        return color(color_scale*pixel[0], color_scale*pixel[1], color_scale*pixel[2]);
+    }
+
+  private:
+    rtw_image image;
+};
+
+class perlin_texture : public texture {
+    public:
+        perlin_texture() : noise(perlin(256)) {};
+        perlin_texture(int n) : noise(perlin(n)) {};
+
+        color value(double u, double v, const point3& p) const override {
+            u = clamp(u, 0.0, 1.0);
+            v = clamp(v, 0.0, 1.0);
+
+            double value = noise.noise(u, v);
+            // normalize value to be in [0, 1]
+            value = 0.5 + 0.5 * value; 
+
+            return color(value, value, value);
+        }
+
+    private: 
+        perlin noise;
 };
 
 #endif /* UTILS_TEXTURE_H_ */
