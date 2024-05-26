@@ -73,7 +73,6 @@ class perlin {
 
             return noise_value;
         }
-
 };
 
 #endif

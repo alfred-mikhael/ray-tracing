@@ -93,7 +93,7 @@ hittable_list earth_scene() {
 hittable_list perlin_scene() {
     hittable_list world;
 
-    auto perlin = make_shared<perlin_texture>(64);
+    auto perlin = make_shared<perlin_texture>();
     auto perlin_text = make_shared<lambertian>(perlin);
     world.add(make_shared<sphere>(point3(0,0,0), point3(0,0,0), 0, 1, 3.0, perlin_text));
 

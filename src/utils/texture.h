@@ -14,6 +14,7 @@
 #include "rtw_image.h"
 #include "../geometry/vec3.h"
 #include <cmath>
+#include <vector>
 
 class texture {
 public:
@@ -94,22 +95,46 @@ class image_texture : public texture {
 
 class perlin_texture : public texture {
     public:
-        perlin_texture() : noise(perlin(256)) {};
-        perlin_texture(int n) : noise(perlin(n)) {};
+        perlin_texture() {
+            std::vector<int> freqs = {32, 64, 128};
+            init(freqs);
+        };
+
+        perlin_texture(int n) {
+            std::vector<int> freqs = {n};
+            init(freqs);
+        };
+
+        perlin_texture(std::vector<int> freqs) {
+            init(freqs);
+        }
+
+        void init(std::vector<int> freqs) {
+            for (int n : freqs) {
+                texts.push_back(perlin(n));
+            }
+        }
+
+        
 
         color value(double u, double v, const point3& p) const override {
             u = clamp(u, 0.0, 1.0);
             v = clamp(v, 0.0, 1.0);
 
-            double value = noise.noise(u, v);
+            double w = 1.0;
+            double value = 0.0;
+            for (const perlin& text : texts) {
+                value += text.noise(u, v) * w;
+            }
             // normalize value to be in [0, 1]
-            value = 0.5 + 0.5 * value; 
+            value = std::fabs(value);
 
             return color(value, value, value);
         }
 
     private: 
-        perlin noise;
+        // perlin noise;
+        std::vector<perlin> texts;
 };
 
 #endif /* UTILS_TEXTURE_H_ */
