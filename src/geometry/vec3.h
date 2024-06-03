@@ -35,6 +35,30 @@ public:
 		return vec3(random_double(min, max), random_double(min, max), random_double(min, max));
 	}
 
+	/**
+	 * Returns the pointwise min of v1 and v2.
+	 * ex. min((1, 2, 3), (-1, 3, -2)) = (-1, 2, -2)
+	*/
+	static vec3 min(const vec3& v1, const vec3& v2) {
+		return vec3(
+			std::fmin(v1.x(), v2.x()),
+			std::fmin(v1.y(), v2.y()),
+			std::fmin(v1.z(), v2.z())
+		);
+	}
+
+	/**
+	 * Returns the pointwise max of v1 and v2.
+	 * ex. max((1, 2, 3), (-1, 3, -2)) = (1, 3, 3)
+	*/
+	static vec3 max(const vec3& v1, const vec3& v2) {
+		return vec3(
+			std::fmax(v1.x(), v2.x()),
+			std::fmax(v1.y(), v2.y()),
+			std::fmax(v1.z(), v2.z())
+		);
+	}
+
 	// Operations
 	vec3 operator-() const { return vec3(-e[0], -e[1], -e[2]); }
 	inline double operator[](int i) const { return e[i]; }

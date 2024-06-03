@@ -12,5 +12,6 @@
 #include "sphere.h"
 #include "utils.h"
 #include "vec3.h"
+#include "quad.h"
 
 #endif /* GEOMETRY_GEOMETRY_H_ */

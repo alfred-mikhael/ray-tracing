@@ -9,6 +9,7 @@
 #define GEOMETRY_AABB_H_
 
 #include "ray.h"
+#include "vec3.h"
 #include <utility>
 #include <algorithm>
 // TODO: Get std::swap to work
@@ -16,7 +17,7 @@
 class aabb {
 public:
 	aabb() {}
-	aabb(point3 min, point3 max) : minimum(min), maximum(max) {}
+	aabb(point3 minimum, point3 maximum) : minimum(vec3::min(minimum, maximum)), maximum(vec3::max(minimum, maximum)) {}
 
 	inline point3 min() const {
 		return minimum;
@@ -54,6 +55,25 @@ public:
 		auto dy = maximum[1] - minimum[1];
 		auto dz = maximum[2] - minimum[2];
 		return 2 * (dx * dy + dx * dz + dy * dz);
+	}
+
+	void inflate() {
+		auto dx = maximum[0] - minimum[0];
+		auto dy = maximum[1] - minimum[1];
+		auto dz = maximum[2] - minimum[2];
+
+		if (std::fabs(dx) < 0.001) {
+			maximum[0] += 0.0005;
+			minimum[0] -= 0.0005;
+		}
+		if (std::fabs(dy) < 0.001) {
+			maximum[1] += 0.0005;
+			minimum[1] -= 0.0005;
+		}
+		if (std::fabs(dz) < 0.001) {
+			maximum[2] += 0.0005;
+			minimum[2] -= 0.0005;
+		}
 	}
 
 public:
