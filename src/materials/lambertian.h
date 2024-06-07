@@ -19,11 +19,13 @@ public:
 
 	virtual bool scatter(const ray& incoming, const hit_record& rec, color& atten, ray& scatter)
 		const override {
-		auto scatter_direction = rec.normal + random_on_unit_sphere();
+		auto scatter_direction = random_in_hemisphere(rec.normal);
 
-		if (scatter_direction.near_zero()) {
-			scatter_direction = rec.normal;
-		}
+		// This code will never be reached because random_in_hemisphere will never 
+		// return a value opposite to the normal.
+		// if (scatter_direction.near_zero()) {
+		// 	scatter_direction = rec.normal;
+		// }
 
 		scatter = ray(rec.p, scatter_direction, incoming.time());
 		atten = albedo->value(rec.u, rec.v, rec.p);

@@ -24,13 +24,16 @@ color ray_color(const ray& r, const hittable& world, int depth) {
 	if (world.hit(r, 0.001, infinity, rec)) {
 		ray scattered;
 		color atten;
+        color from_emisson = rec.mat_ptr->emitted(rec.u, rec.v, rec.p);
+
 		if (rec.mat_ptr->scatter(r, rec, atten, scattered)) {
-			return atten * ray_color(scattered, world, depth-1);
-		} return color(0, 0, 0);
+			return from_emisson + atten * ray_color(scattered, world, depth-1);
+		} 
+        // If no scattering, just return emitted light
+        return from_emisson;
 	}
-	auto unit_direction = unit_vector(r.direction());
-    auto t = 0.5 * (unit_direction.y() + 1.0);
-    return (1.0 - t) * color(1.0, 1.0, 1.0) + t * color(0.5, 0.7, 1.0);
+    // no hit, return background color
+    return color(0.0, 0.0, 0.0);
 }
 
 hittable_list random_scene() {
@@ -106,7 +109,7 @@ hittable_list quads() {
 
     // Materials
     auto left_red     = make_shared<lambertian>(color(1.0, 0.2, 0.2));
-    auto back_green   = make_shared<lambertian>(color(0.2, 1.0, 0.2));
+    auto back_green   = make_shared<diffuse_light>(color(4.0, 4.0, 4.0));
     auto right_blue   = make_shared<lambertian>(color(0.2, 0.2, 1.0));
     auto upper_orange = make_shared<lambertian>(color(1.0, 0.5, 0.0));
     auto lower_teal   = make_shared<lambertian>(color(0.2, 0.8, 0.8));
@@ -121,13 +124,44 @@ hittable_list quads() {
     return world;
 }
 
+hittable_list cornell_box() {
+    // copied from Ray Tracing: The Next Week
+    hittable_list world;
+
+    auto red   = make_shared<lambertian>(color(.65, .05, .05));
+    auto white = make_shared<lambertian>(color(.73, .73, .73));
+    auto green = make_shared<lambertian>(color(.12, .45, .15));
+    auto light = make_shared<diffuse_light>(color(15, 15, 15));
+
+    world.add(make_shared<quad>(point3(555,0,0), vec3(0,555,0), vec3(0,0,555), green));
+    world.add(make_shared<quad>(point3(0,0,0), vec3(0,555,0), vec3(0,0,555), red));
+    world.add(make_shared<quad>(point3(343, 554, 332), vec3(-130,0,0), vec3(0,0,-105), light));
+    world.add(make_shared<quad>(point3(0,0,0), vec3(555,0,0), vec3(0,0,555), white));
+    world.add(make_shared<quad>(point3(555,555,555), vec3(-555,0,0), vec3(0,0,-555), white));
+    world.add(make_shared<quad>(point3(0,0,555), vec3(555,0,0), vec3(0,555,0), white));
+
+    return world;
+}
+
 int main() {
 	// Image
+    // double aspect_ratio = 1.0;
+    // int image_width = 600;
+    // int image_height = 600;
+    // int samples_per_pixel = 100;
+    // double max_depth = 50;
+    // double vfov = 40;
+    // point3 lookfrom = point3(278, 278, -800);
+    // point3 lookat = point3(278, 278, 0);
+    // point3 vup = vec3(0,1,0);
+    
+    // camera cam(vfov, lookfrom, lookat, vup, 1.0, 1.0, 0.1, 800.0, 0.0, 1.0);
+    
 	const int image_width = 400;
 	const auto aspect_ratio = 16.0 / 9.0;
 	const int image_height = static_cast<int>(image_width / aspect_ratio);
-	const int samples_per_pixel = 30;
-	const int max_depth = 15;
+	const int samples_per_pixel = 200;
+	const int max_depth = 50;
 
 	// World
 	hittable_list world = quads();
