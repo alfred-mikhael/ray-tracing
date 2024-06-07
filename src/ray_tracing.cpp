@@ -15,101 +15,79 @@
 
 using std::make_shared;
 
-color ray_color(const ray& r, const hittable& world, int depth) {
-	if (depth <= 0) {
-		return color(0, 0, 0);
-	}
+// hittable_list random_scene() {
+//     hittable_list world;
+//
+//     auto earth = make_shared<image_texture>("earthmap.jpg");
+//     auto earth_text = make_shared<lambertian>(earth);
+//     world.add(make_shared<sphere>(point3(0,-1000,0), point3(0,-1000,0), 0, 1, 1000, earth_text));
+//
+//     for (int a = -15; a < 15; a++) {
+//         for (int b = -15; b < 15; b++) {
+//             auto choose_mat = random_double();
+//             point3 center(a + 0.9*random_double(), 0.2, b + 0.9*random_double());
+//
+//             if ((center - point3(4, 0.2, 0)).length() > 0.9) {
+//                 shared_ptr<material> sphere_material;
+//
+//                 if (choose_mat < 0.8) {
+//                     // diffuse
+//                     auto albedo = color::random() * color::random();
+//                     auto jump = vec3(0, random_double(0, 0.5), 0);
+//                     sphere_material = make_shared<lambertian>(albedo);
+//                     world.add(make_shared<sphere>(center, center + jump, 0, 1, 0.2, sphere_material));
+//                 } else if (choose_mat < 0.95) {
+//                     // metal
+//                     auto albedo = color::random(0.5, 1);
+//                     auto fuzz = random_double(0, 0.5);
+//                     sphere_material = make_shared<metal>(albedo, fuzz);
+//                     world.add(make_shared<sphere>(center, center, 0, 1, 0.2, sphere_material));
+//                 } else {
+//                     // glass
+//                     sphere_material = make_shared<dielectric>(1.5);
+//                     world.add(make_shared<sphere>(center, center, 0, 1, 0.2, sphere_material));
+//                 }
+//             }
+//         }
+//     }
+//     auto material1 = make_shared<dielectric>(1.5);
+//     world.add(make_shared<sphere>(point3(0, 1, 0), point3(0, 1, 0), 0, 1, 1.0, material1));
+//
+//     auto material2 = make_shared<lambertian>(color(0.4, 0.2, 0.1));
+//     world.add(make_shared<sphere>(point3(-4, 1, 0), point3(-4, 1, 0), 0, 1, 1.0, material2));
+//
+//     auto material3 = make_shared<metal>(color(0.7, 0.6, 0.5), 0.0);
+//     world.add(make_shared<sphere>(point3(4, 1, 0), point3(4, 1, 0), 0, 1, 1.0, material3));
+//
+//     return world;
+// }
 
-	hit_record rec;
-	if (world.hit(r, 0.001, infinity, rec)) {
-		ray scattered;
-		color atten;
-        color from_emisson = rec.mat_ptr->emitted(rec.u, rec.v, rec.p);
+// hittable_list earth_scene() {
+//     hittable_list world;
+//
+//     auto earth = make_shared<image_texture>("earthmap.jpg");
+//     auto earth_text = make_shared<lambertian>(earth);
+//     world.add(make_shared<sphere>(point3(0,0,0), point3(0,0,0), 0, 1, 3.0, earth_text));
+//
+//     return world;
+// }
 
-		if (rec.mat_ptr->scatter(r, rec, atten, scattered)) {
-			return from_emisson + atten * ray_color(scattered, world, depth-1);
-		} 
-        // If no scattering, just return emitted light
-        return from_emisson;
-	}
-    // no hit, return background color
-    return color(0.0, 0.0, 0.0);
-}
-
-hittable_list random_scene() {
-    hittable_list world;
-
-    auto earth = make_shared<image_texture>("earthmap.jpg");
-    auto earth_text = make_shared<lambertian>(earth);
-    world.add(make_shared<sphere>(point3(0,-1000,0), point3(0,-1000,0), 0, 1, 1000, earth_text));
-
-    for (int a = -15; a < 15; a++) {
-        for (int b = -15; b < 15; b++) {
-            auto choose_mat = random_double();
-            point3 center(a + 0.9*random_double(), 0.2, b + 0.9*random_double());
-
-            if ((center - point3(4, 0.2, 0)).length() > 0.9) {
-                shared_ptr<material> sphere_material;
-
-                if (choose_mat < 0.8) {
-                    // diffuse
-                    auto albedo = color::random() * color::random();
-                    auto jump = vec3(0, random_double(0, 0.5), 0);
-                    sphere_material = make_shared<lambertian>(albedo);
-                    world.add(make_shared<sphere>(center, center + jump, 0, 1, 0.2, sphere_material));
-                } else if (choose_mat < 0.95) {
-                    // metal
-                    auto albedo = color::random(0.5, 1);
-                    auto fuzz = random_double(0, 0.5);
-                    sphere_material = make_shared<metal>(albedo, fuzz);
-                    world.add(make_shared<sphere>(center, center, 0, 1, 0.2, sphere_material));
-                } else {
-                    // glass
-                    sphere_material = make_shared<dielectric>(1.5);
-                    world.add(make_shared<sphere>(center, center, 0, 1, 0.2, sphere_material));
-                }
-            }
-        }
-    }
-    auto material1 = make_shared<dielectric>(1.5);
-    world.add(make_shared<sphere>(point3(0, 1, 0), point3(0, 1, 0), 0, 1, 1.0, material1));
-
-    auto material2 = make_shared<lambertian>(color(0.4, 0.2, 0.1));
-    world.add(make_shared<sphere>(point3(-4, 1, 0), point3(-4, 1, 0), 0, 1, 1.0, material2));
-
-    auto material3 = make_shared<metal>(color(0.7, 0.6, 0.5), 0.0);
-    world.add(make_shared<sphere>(point3(4, 1, 0), point3(4, 1, 0), 0, 1, 1.0, material3));
-
-    return world;
-}
-
-hittable_list earth_scene() {
-    hittable_list world;
-
-    auto earth = make_shared<image_texture>("earthmap.jpg");
-    auto earth_text = make_shared<lambertian>(earth);
-    world.add(make_shared<sphere>(point3(0,0,0), point3(0,0,0), 0, 1, 3.0, earth_text));
-
-    return world;
-}
-
-hittable_list perlin_scene() {
-    hittable_list world;
-
-    auto perlin = make_shared<perlin_texture>();
-    auto perlin_text = make_shared<lambertian>(perlin);
-    world.add(make_shared<sphere>(point3(0,0,0), point3(0,0,0), 0, 1, 3.0, perlin_text));
-
-    return world;
-}
+// hittable_list perlin_scene() {
+//     hittable_list world;
+//
+//     auto perlin = make_shared<perlin_texture>();
+//     auto perlin_text = make_shared<lambertian>(perlin);
+//     world.add(make_shared<sphere>(point3(0,0,0), point3(0,0,0), 0, 1, 3.0, perlin_text));
+//
+//     return world;
+// }
 
 hittable_list quads() {
-    // Copied directly from "Ray Tracing: The Next Week"
     hittable_list world;
 
     // Materials
     auto left_red     = make_shared<lambertian>(color(1.0, 0.2, 0.2));
-    auto back_green   = make_shared<diffuse_light>(color(4.0, 4.0, 4.0));
+    auto back_green   = make_shared<lambertian>(color(0.2, 1.0, 0.2));
     auto right_blue   = make_shared<lambertian>(color(0.2, 0.2, 1.0));
     auto upper_orange = make_shared<lambertian>(color(1.0, 0.5, 0.0));
     auto lower_teal   = make_shared<lambertian>(color(0.2, 0.8, 0.8));
@@ -121,11 +99,38 @@ hittable_list quads() {
     world.add(make_shared<quad>(point3(-2, 3, 1), vec3(4, 0, 0), vec3(0, 0, 4), upper_orange));
     world.add(make_shared<quad>(point3(-2,-3, 5), vec3(4, 0, 0), vec3(0, 0,-4), lower_teal));
 
-    return world;
+    camera cam(80, point3(0, 0, 9), point3(0, 0, 0), vec3(0, 1, 0), 1.0, 1.0, 0.1, 5.0, 0.0, 1.0);
+    cam.image_width       = 400;
+    cam.samples_per_pixel = 100;
+    cam.max_depth         = 50;
+
+    bvh_node bvh_world(world);
+
+    std::ofstream output;
+    output.open("image2.ppm");
+
+    cam.render(output, bvh_world);
 }
 
-hittable_list cornell_box() {
+void cornell_box() {
     // copied from Ray Tracing: The Next Week
+
+    // set camera params
+    double aspect_ratio = 1.0;
+    int image_width = 600;
+    int image_height = 600;
+    double vfov = 40;
+    point3 lookfrom = point3(278, 278, -800);
+    point3 lookat = point3(278, 278, 0);
+    point3 vup = vec3(0,1,0);
+    
+    camera cam(vfov, lookfrom, lookat, vup, 1.0, 1.0, 0.1, 800.0, 0.0, 1.0);
+    cam.samples_per_pixel = 200;
+    cam.max_depth = 100;
+    cam.image_height = image_height;
+    cam.image_width = image_width;
+    
+    // construct world
     hittable_list world;
 
     auto red   = make_shared<lambertian>(color(.65, .05, .05));
@@ -140,56 +145,17 @@ hittable_list cornell_box() {
     world.add(make_shared<quad>(point3(555,555,555), vec3(-555,0,0), vec3(0,0,-555), white));
     world.add(make_shared<quad>(point3(0,0,555), vec3(555,0,0), vec3(0,555,0), white));
 
-    return world;
-}
+    bvh_node bvh_world(world, 0.0, 1.0);
 
-int main() {
-	// Image
-    // double aspect_ratio = 1.0;
-    // int image_width = 600;
-    // int image_height = 600;
-    // int samples_per_pixel = 100;
-    // double max_depth = 50;
-    // double vfov = 40;
-    // point3 lookfrom = point3(278, 278, -800);
-    // point3 lookat = point3(278, 278, 0);
-    // point3 vup = vec3(0,1,0);
-    
-    // camera cam(vfov, lookfrom, lookat, vup, 1.0, 1.0, 0.1, 800.0, 0.0, 1.0);
-    
-	const int image_width = 400;
-	const auto aspect_ratio = 16.0 / 9.0;
-	const int image_height = static_cast<int>(image_width / aspect_ratio);
-	const int samples_per_pixel = 200;
-	const int max_depth = 50;
-
-	// World
-	hittable_list world = quads();
-	auto bvh_world = bvh_node(world, 0, 1);
-
-	// Camera
-    camera cam(80.0, point3(0,0,9), point3(0,0,0), vec3(0,1,0), 0.1, 10.0, 0, 1);
-
+    // render
     std::ofstream output;
     output.open("image2.ppm");
 
-	// Render
-	output << "P3\n" << image_width << ' ' << image_height << "\n255\n";
+    cam.render(output, bvh_world);
+}
 
-	for (int i = image_height - 1; i >= 0; i--) {
-        std::cout << "writing row " << i << std::endl;
-		for (int j = 0; j < image_width; j++) {
-            color pixel_color(0, 0, 0);
-            for (int s = 0; s < samples_per_pixel; ++s) {
-                double h_offset = (j + random_double()) / (image_width-1);
-                double v_offset = (i + random_double()) / (image_height-1);
-                ray r = cam.get_ray(h_offset, v_offset);
-                pixel_color += ray_color(r, bvh_world, max_depth);
-            }
-            write_color(output, pixel_color, samples_per_pixel);
-		}
-	}
-
+int main() {
+    cornell_box();
 	return 0;
 }
 

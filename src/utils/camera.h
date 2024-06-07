@@ -14,6 +14,8 @@
 
 class camera {
 public:
+	camera() {};
+
 	camera(
 			double vfov,
 			point3 lookfrom,
@@ -65,7 +67,50 @@ public:
         );
 	}
 
-private:
+	color ray_color(const ray& r, const hittable& world, int depth) {
+		if (depth <= 0) {
+			return color(0, 0, 0);
+		}
+
+		hit_record rec;
+		if (world.hit(r, 0.001, infinity, rec)) {
+			ray scattered;
+			color atten;
+			color from_emisson = rec.mat_ptr->emitted(rec.u, rec.v, rec.p);
+
+			if (rec.mat_ptr->scatter(r, rec, atten, scattered)) {
+				return from_emisson + atten * ray_color(scattered, world, depth-1);
+			} 
+			// If no scattering, just return emitted light
+			return from_emisson;
+		}
+		// no hit, return background color
+		return color(0.0, 0.0, 0.0);
+	}
+
+	void render(std::ostream& output, const hittable& world, bool debug=true) {
+		// Render
+		output << "P3\n" << image_width << ' ' << image_height << "\n255\n";
+
+		for (int i = image_height - 1; i >= 0; i--) {
+			
+			if (debug) {
+				std::cout << "writing row " << i << std::endl;
+			}
+
+			for (int j = 0; j < image_width; j++) {
+				color pixel_color(0, 0, 0);
+				for (int s = 0; s < samples_per_pixel; ++s) {
+					double h_offset = (j + random_double()) / (image_width-1);
+					double v_offset = (i + random_double()) / (image_height-1);
+					ray r = get_ray(h_offset, v_offset);
+					pixel_color += ray_color(r, world, max_depth);
+				}
+				write_color(output, pixel_color, samples_per_pixel);
+			}
+		}
+	}
+
 	double lens_radius;
 	vec3 u, v, w;
 	point3 origin;
@@ -73,6 +118,10 @@ private:
 	vec3 horizontal;
 	vec3 vertical;
 	double time0, time1;
+	int image_width=400;
+	int image_height=225;
+	int samples_per_pixel=50;
+	int max_depth=30;
 };
 
 

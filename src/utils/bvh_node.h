@@ -22,6 +22,8 @@ class bvh_node : public hittable {
     public:
         bvh_node();
 
+        bvh_node(const hittable_list& list) : bvh_node(list, 0.0, 1.0) {}
+
         bvh_node(const hittable_list& list, double time0, double time1)
             : bvh_node(list.objects, 0, list.objects.size() - 1, time0, time1)
         {}
